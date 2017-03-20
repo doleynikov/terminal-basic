@@ -244,7 +244,7 @@ Parser::fOperator()
 				return false;
 		if (_mode == EXECUTE) {
 			_interpreter.print('\r');
-                        _interpreter.print('\n');
+      _interpreter.print('\n');
                 }
 		break;
 	case Token::KW_RANDOMIZE:

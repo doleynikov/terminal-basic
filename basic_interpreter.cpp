@@ -410,7 +410,9 @@ Interpreter::print(const Parser::Value &v)
 void
 Interpreter::newline()
 {
-	_output.print("\r\n");
+  _output.print('\r');
+  _output.print('\n');
+
 }
 
 void
@@ -912,14 +914,17 @@ Interpreter::readInput()
 	uint8_t end = _inputPosition + read;
 	for (uint8_t i = _inputPosition; i < end; ++i) {
 		char c = _inputBuffer[i];
-		_output.write(c);
-		switch (c) {
+		if (c!='\n')_output.write(c);
+ 		switch (c) {
 		case char(ASCII::BS):
 			if (_inputPosition > 0)
 				--_inputPosition;
 			break;
-		case char(ASCII::CR):
-			_output.write(char(ASCII::LF));
+//    case char(ASCII::CR):
+//      _output.write(char(ASCII::LF));
+    case '\r':
+      _output.write('\n');
+
 			_inputBuffer[i] = 0;
 			return (true);
 		default:
@@ -1191,7 +1196,8 @@ Interpreter::confirm()
 		char c = _input.read();
 		_output.write(c);
 		while (_input.available() <= 0);
-		if (_input.read() != int(ASCII::CR)) {
+//    if (_input.read() != int(ASCII::CR)) {
+    if (_input.read() != '\r') {
 			newline();
 			continue;
 		}
