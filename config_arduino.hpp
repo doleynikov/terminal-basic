@@ -70,7 +70,7 @@ const size_t PROGRAMSIZE = 384;
 
 // Max size of the string constants/variables
 //const uint8_t STRINGSIZE = 32;
-const uint8_t STRINGSIZE = 20;
+const uint8_t STRINGSIZE = 16;
 
 // Number of characters in variable name
 const uint8_t VARSIZE = 4;

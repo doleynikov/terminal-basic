@@ -61,7 +61,7 @@ static BASIC::ArduinoIO arduinoIo;
 
 class myLcd : public LiquidCrystal_I2C   // производный класс
 {
-    char screen[16]={' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '};
+    char screen[40]={' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '};
     int8_t pos = 0;
 
   public:
@@ -72,7 +72,7 @@ class myLcd : public LiquidCrystal_I2C   // производный класс
       Serial.write(value);
       if (value != '\n' && value != '\r') {
         
-        if (pos > 15) {
+        if (pos > 40) {
           scroll();      
           setCursor(0, 1);
           pos=0;
@@ -90,7 +90,7 @@ void    scroll() {
       int8_t tpos = pos;
       clear();
       setCursor(0, 0);
-      for (int i = 0; i < 15; i++) {
+      for (int i = 0; i < 40; i++) {
         send(screen[i], Rs);
         screen[i]=' ';
       }
