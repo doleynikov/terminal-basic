@@ -69,15 +69,14 @@ class myLcd : public LiquidCrystal_I2C   // производный класс
     myLcd(uint8_t a, uint8_t b, uint8_t c) : LiquidCrystal_I2C (a, b, c)     {}
 
     inline size_t write(uint8_t value) {
+      if (value == '\t')value = ' ';
       Serial.write(value);
       if (value != '\n' && value != '\r') {
-        
-        if (pos > 40) {
+        if (pos >= 40) {
           scroll();      
           setCursor(0, 1);
           pos=0;
         }
-        if (value == '\t')value = ' ';
         screen[pos++] = value;
         send(value, Rs);
       }
@@ -110,7 +109,6 @@ void setup()
 {
 //  lcd.begin(16,2,0);
   lcd.init();
-  // Print a message to the LCD.
   lcd.backlight();
   lcd.clear();
   lcd.setCursor(0, 1);
