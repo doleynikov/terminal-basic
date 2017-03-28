@@ -34,8 +34,7 @@
 #define USEMATH 	1 // Math (requires USE_REALS)
 #define USEARDUINOIO	0 // ARduino IO
 
-// Uыe TFT output
-#define USEUTFT		0
+
 // Use multiterminal mode
 #define BASIC_MULTITERMINAL 0
 // Use external memory
