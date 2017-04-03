@@ -18,7 +18,9 @@
 
 #include "bytearray.hpp"
 
-#include "Print.h"
+#include <Print.h>
+//#include "ascii.hpp"
+
 
 ByteArray::ByteArray(const uint8_t *data, size_t size) :
 _data(data), _size(size)
@@ -63,7 +65,7 @@ ByteArray::printTo(Print& p) const
 			}
 		}
 		for (; j < 8; ++j)
-			res += p.print("   ");
+			res += p.print(' ');
 		res += p.print('\t');
 		for (size_t j = 0; j < 8; ++j, ++i) {
 			if (i >= size())

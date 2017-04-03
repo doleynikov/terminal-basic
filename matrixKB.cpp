@@ -10,7 +10,7 @@
 // Keyboard
 #define  ROWS  8
 #define  COLS  5
-char charMap[4][ROWS][COLS] =
+char const PROGMEM charMap[4][ROWS][COLS] =
 {
   {
     //0
@@ -43,7 +43,7 @@ char charMap[4][ROWS][COLS] =
     {'&', '\'', '(', ')', '_'},
     {'Y', 'U', 'I', 'O', 'P'},
     {'^', '-', '+', '=', KEY_ENTER},
-    {'*', ',', '.', SYMBOL_SHIFT, ' '}
+    {'*', ',', '.', SYMBOL_SHIFT, KEY_BRK}
   },
   {
     //3 = CAPS_SHIFT and SYMBOL_SHIFT
@@ -55,24 +55,15 @@ char charMap[4][ROWS][COLS] =
     {'Y', 'U', 'I', 'O', 'P'},
     {'H', 'J', 'K', 'L', KEY_ENTER},
     {'B', 'N', 'M', SYMBOL_SHIFT, ' '}
-  },
+  }
 
 };
 
-uint8_t i = 0;
-uint8_t j = 0;
-
-static uint8_t CharBuffer = 0;
-static uint8_t row = 255;
-static uint8_t col = 255;
-static uint8_t oldRow = 255;
-static uint8_t oldCol = 255;
-static uint8_t shift = 0B00000000;
-static uint8_t keyPressed = 0;
-static uint8_t keyReleased = 255;
+ uint8_t CharBuffer = 0;
 
 uint8_t getScanCode(uint8_t r, uint8_t c)
 {
+static uint8_t shift = 0B00000000;
   //    sh &= 0B00000011; // выдаляем биты шифтов
   uint8_t sh = 0;
   uint8_t ret = charMap[sh][r][c];
@@ -87,23 +78,29 @@ uint8_t getScanCode(uint8_t r, uint8_t c)
     shift ^= 0B00000010; // инвертируем SUMBOL_SHIFT
     ret = 0;
   }
-  else {
-    sh = shift;
+  else if (ret!=0){ //нажато что-то, но не шифт
+    sh = shift & 0B00000011; //выделим биты шифтов - они дадут номер нужной таблицы символов
     ret = charMap[sh][r][c];
     shift &= 0B11111100; //обнулим биты шифтов
   }
-
-
   if (ret == CharBuffer)ret = 0;
-
+  
   return ret;
-
 }
 
 // The ISR for the interrupt
 ISR (TIMER2_COMPA_vect)
-{ cli();
-  //    Serial.println(".");
+{
+static uint8_t row = 255;
+static uint8_t col = 255;
+static uint8_t oldRow = 255;
+static uint8_t oldCol = 255;
+uint8_t i;
+uint8_t j;
+static uint8_t keyPressed = 0;
+static uint8_t keyReleased = 255;
+
+  cli();
   // Обработчик прерывания таймера 2
   col = 255;
   row = 255;
@@ -127,7 +124,6 @@ ISR (TIMER2_COMPA_vect)
     PORTB |= (1 << i);
     delay(10);
   }
-  //    Serial.println(String(row)+" "+String(col)+" "+String(keyPressed));
   if (keyPressed != 0 )
   {
     oldRow = row;
@@ -157,14 +153,11 @@ int matrixKB::available()
 int matrixKB::read()
 {
   uint8_t result;
-
-
   result = CharBuffer;
   if (result)
   {
     CharBuffer = 0;
   }
-
   if (!result) return -1;
   return result;
 }
@@ -187,7 +180,6 @@ void matrixKB::begin()
   PORTD = 0b00111100; //0x0F;
   delay(10);
 
-
   TCCR2A = (1 << WGM21);  // Режим CTC (сброс по совпадению)
   // TCCR2B = (1<<CS20);                     // Тактирование от CLK.
   // TCCR2B = (1<<CS21);                     // CLK/8
@@ -204,9 +196,9 @@ void matrixKB::begin()
   sei();              // разрешаем прерывания (запрещаем: cli(); )
 }
 
-       int matrixKB::peek(){};
+       int matrixKB::peek(){return 0;};
        void matrixKB::flush(){};
-       size_t matrixKB::write(uint8_t){};
+       size_t matrixKB::write(uint8_t){return 0;};
 
 
 

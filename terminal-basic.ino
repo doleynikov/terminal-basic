@@ -16,19 +16,16 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define RX_BUFFER_SIZE 16
+#define TX_BUFFER_SIZE 16
+
 #include "basic.hpp"
 
 #include "basic_program.hpp"
 #include "basic_arduinoio.hpp"
 
-//#include "seriallight.hpp"
-
 #if USESD
 #include "basic_sdfs.hpp"
-#endif
-
-#if USEUTFT
-#include "utft_stream.hpp"
 #endif
 
 #if USEMATH
@@ -39,10 +36,6 @@
    Instantiating modules
 */
 
-#if USEUTFT
-static UTFT	utft(CTE32HR, 38, 39, 40, 41);
-static UTFTTerminal utftPrint(utft);
-#endif
 
 #if USESD
 static BASIC::SDFSModule sdfs;
@@ -58,6 +51,7 @@ static BASIC::ArduinoIO arduinoIo;
 
 #include <Wire.h>
 #include "LiquidCrystal_I2C.h"
+#include "matrixKB.h"
 
 class myLcd : public LiquidCrystal_I2C   // производный класс
 {
@@ -70,7 +64,6 @@ class myLcd : public LiquidCrystal_I2C   // производный класс
 
     inline size_t write(uint8_t value) {
       if (value == '\t')value = ' ';
-      Serial.write(value);
       if (value != '\n' && value != '\r') {
         if (pos >= 40) {
           scroll();      
@@ -89,7 +82,7 @@ void    scroll() {
       int8_t tpos = pos;
       clear();
       setCursor(0, 0);
-      for (int i = 0; i < 40; i++) {
+      for (int8_t i = 0; i < 40; i++) {
         send(screen[i], Rs);
         screen[i]=' ';
       }
@@ -98,31 +91,27 @@ void    scroll() {
     }
 
 };
-myLcd lcd(0x27, 16, 2);
 
+myLcd lcd(0x27, 16, 2);
+matrixKB kb;
 
 static BASIC::Interpreter::Program program(BASIC::PROGRAMSIZE);
 //static BASIC::Interpreter basic(Serial, Serial, program);
-static BASIC::Interpreter basic(Serial, lcd, program);
+static BASIC::Interpreter basic(kb, lcd, program);
 
 void setup()
 {
-//  lcd.begin(16,2,0);
   lcd.init();
   lcd.backlight();
   lcd.clear();
   lcd.setCursor(0, 1);
-
+  kb.begin();
 
 #if USE_EXTMEM
   XMCRA |= 1ul << 7; // Switch ext mem iface on
   XMCRB = 0;
 #endif
-  Serial.begin(9600);
-#if USEUTFT
-  utftPrint.begin();
-#endif
-
+//  Serial.begin(9600);
 
 
 #if USEARDUINOIO

@@ -69,12 +69,12 @@ bool
 SDFSModule::directory(Interpreter &i)
 {	
 	_root.rewindDirectory();
-	i.print("SD CARD CONTENTS");
+	i.print(F("SD CARD CONTENTS"));
 	i.newline();
 	Integer index = 0;
 	for (File ff = _root.openNextFile(); ff; ff = _root.openNextFile()) {
 		i.print(++index);
-		i.print("    ");
+		i.print(F("    "));
 		i.print(ff.name());
 		uint8_t len = min((uint8_t(13)-strlen(ff.name())),
 		    uint8_t(13));

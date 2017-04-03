@@ -34,7 +34,7 @@
 
 #include "bytearray.hpp"
 #include "version.h"
-#include "ascii.hpp"
+//#include "ascii.hpp"
 #ifdef ARDUINO
 #include "config_arduino.hpp"
 #else
@@ -44,10 +44,10 @@
 namespace BASIC
 {
 
-static const char strStatic[] PROGMEM = "STATIC";
-static const char strDynamic[] PROGMEM = "DYNAMIC";
-static const char strError[] PROGMEM = "ERROR";
-static const char strSemantic[] PROGMEM = "SEMANTIC";
+static const char strStatic[] PROGMEM = "STAT.";
+static const char strDynamic[] PROGMEM = "DYN.";
+static const char strError[] PROGMEM = "ERR.";
+static const char strSemantic[] PROGMEM = "SEM.";
 static const char strReady[] PROGMEM = ">";
 static const char strBytes[] PROGMEM = "B.";
 static const char strAvailable[] PROGMEM = "FREE";
@@ -231,12 +231,12 @@ Interpreter::step()
 		}
 		break;
 	case EXECUTE: 
-		c = char(ASCII::NUL);
+		c = char(0x00);
 #ifdef ARDUINO
 		if (_input.available() > 0)
 			c = _input.read();
 #endif
-		if (_program._current < _program._textEnd && c != char(ASCII::EOT)) {
+		if (_program._current < _program._textEnd && c != char(0x04)) {
 			Program::String *s = _program.current();
 			if (!_parser.parse(s->text + _program._textPosition))
 				raiseError(STATIC_ERROR);
@@ -270,7 +270,6 @@ Interpreter::exec()
 void
 Interpreter::cls()
 {
-//	_output.print("\x1B[2J"), _output.print("\x1B[H");
 }
 
 void
@@ -308,7 +307,7 @@ Interpreter::addModule(FunctionBlock *module)
 void
 Interpreter::dump(DumpMode mode)
 {
-	switch (mode) {
+/*	switch (mode) {
 	case MEMORY:
 	{
 		ByteArray ba((uint8_t*) _program._text, _program.programSize);
@@ -358,7 +357,7 @@ Interpreter::dump(DumpMode mode)
 		}
 	}
 		break;
-	}
+	}*/
 }
 
 void
@@ -904,7 +903,7 @@ Interpreter::set(ArrayFrame &f, size_t index, const Parser::Value &v)
 bool
 Interpreter::readInput()
 {
-	int a = _input.available();
+	int8_t a = _input.available();
 	if (a <= 0)
 		return (false);
 
@@ -918,15 +917,12 @@ Interpreter::readInput()
 		char c = _inputBuffer[i];
 		if (c!='\n')_output.write(c);
  		switch (c) {
-		case char(ASCII::BS):
+		case char(0x08):
 			if (_inputPosition > 0)
 				--_inputPosition;
 			break;
-//    case char(ASCII::CR):
-//      _output.write(char(ASCII::LF));
     case '\r':
       _output.write('\n');
-
 			_inputBuffer[i] = 0;
 			return (true);
 		default:
@@ -1198,7 +1194,6 @@ Interpreter::confirm()
 		char c = _input.read();
 		_output.write(c);
 		while (_input.available() <= 0);
-//    if (_input.read() != int(ASCII::CR)) {
     if (_input.read() != '\r') {
 			newline();
 			continue;

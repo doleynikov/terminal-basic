@@ -135,7 +135,7 @@ void LiquidCrystal_I2C::home(){
 }
 
 void LiquidCrystal_I2C::setCursor(uint8_t col, uint8_t row){
-	int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
+	uint8_t row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
 	if ( row > _numlines ) {
 		row = _numlines-1;    // we count rows starting w/0
 	}
@@ -209,7 +209,7 @@ void LiquidCrystal_I2C::noAutoscroll(void) {
 void LiquidCrystal_I2C::createChar(uint8_t location, uint8_t charmap[]) {
 	location &= 0x7; // we only have 8 locations 0-7
 	command(LCD_SETCGRAMADDR | (location << 3));
-	for (int i=0; i<8; i++) {
+	for (int8_t i=0; i<8; i++) {
 		write(charmap[i]);
 	}
 }
@@ -302,7 +302,7 @@ void LiquidCrystal_I2C::printstr(const char c[]){
 
 
 // unsupported API functions
-void LiquidCrystal_I2C::off(){}
+/*void LiquidCrystal_I2C::off(){}
 void LiquidCrystal_I2C::on(){}
 void LiquidCrystal_I2C::setDelay (int cmdDelay,int charDelay) {}
 uint8_t LiquidCrystal_I2C::status(){return 0;}
@@ -311,5 +311,6 @@ uint8_t LiquidCrystal_I2C::init_bargraph(uint8_t graphtype){return 0;}
 void LiquidCrystal_I2C::draw_horizontal_graph(uint8_t row, uint8_t column, uint8_t len,  uint8_t pixel_col_end){}
 void LiquidCrystal_I2C::draw_vertical_graph(uint8_t row, uint8_t column, uint8_t len,  uint8_t pixel_row_end){}
 void LiquidCrystal_I2C::setContrast(uint8_t new_val){}
+*/
 
 	
