@@ -1,6 +1,6 @@
 //YWROBOT
-#ifndef LiquidCrystal_I2C_h
-#define LiquidCrystal_I2C_h
+#ifndef MyLiquidCrystal_I2C_h
+#define MyLiquidCrystal_I2C_h
 
 #include <inttypes.h>
 #include "Print.h" 
@@ -52,9 +52,9 @@
 #define Rw B00000010  // Read/Write bit
 #define Rs B00000001  // Register select bit
 
-class LiquidCrystal_I2C : public Print {
+class MyLiquidCrystal_I2C : public Print {
 public:
-  LiquidCrystal_I2C(uint8_t lcd_Addr,uint8_t lcd_cols,uint8_t lcd_rows);
+  MyLiquidCrystal_I2C(uint8_t lcd_Addr,uint8_t lcd_cols,uint8_t lcd_rows);
   void begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS );
   void clear();
   void home();
@@ -78,11 +78,7 @@ public:
   void noAutoscroll(); 
   void createChar(uint8_t, uint8_t[]);
   void setCursor(uint8_t, uint8_t); 
-#if defined(ARDUINO) && ARDUINO >= 100
   virtual size_t write(uint8_t);
-#else
-  virtual void write(uint8_t);
-#endif
   void command(uint8_t);
   void init();
 
@@ -125,3 +121,4 @@ private:
 };
 
 #endif
+

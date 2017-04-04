@@ -10,7 +10,7 @@
 // Keyboard
 #define  ROWS  8
 #define  COLS  5
-char const PROGMEM charMap[4][ROWS][COLS] =
+char  charMap[4][ROWS][COLS] =
 {
   {
     //0
@@ -84,6 +84,8 @@ static uint8_t shift = 0B00000000;
     shift &= 0B11111100; //обнулим биты шифтов
   }
   if (ret == CharBuffer)ret = 0;
+
+//  Serial.println(ret);
   
   return ret;
 }

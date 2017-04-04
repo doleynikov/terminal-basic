@@ -50,19 +50,20 @@ static BASIC::ArduinoIO arduinoIo;
 #endif
 
 #include <Wire.h>
-#include "LiquidCrystal_I2C.h"
+#include "MyLiquidCrystal_I2C.h"
 #include "matrixKB.h"
 
-class myLcd : public LiquidCrystal_I2C   // производный класс
+class myLcd : public MyLiquidCrystal_I2C   // производный класс
 {
     char screen[40]={' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '};
     int8_t pos = 0;
 
   public:
 
-    myLcd(uint8_t a, uint8_t b, uint8_t c) : LiquidCrystal_I2C (a, b, c)     {}
+    myLcd(uint8_t a, uint8_t b, uint8_t c) : MyLiquidCrystal_I2C (a, b, c)     {}
 
     inline size_t write(uint8_t value) {
+//      Serial.write(int(value));
       if (value == '\t')value = ' ';
       if (value != '\n' && value != '\r') {
         if (pos >= 40) {
@@ -111,7 +112,7 @@ void setup()
   XMCRA |= 1ul << 7; // Switch ext mem iface on
   XMCRB = 0;
 #endif
-//  Serial.begin(9600);
+ // Serial.begin(9600);
 
 
 #if USEARDUINOIO
