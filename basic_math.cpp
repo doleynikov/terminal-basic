@@ -23,18 +23,18 @@
 #include <math.h>
 #include <string.h>
 
-//#include "ascii.hpp"
+#include "ascii.hpp"
 #include "helper.hpp"
 
 namespace BASIC
 {
 
 static const uint8_t mathTokens[] PROGMEM = {
-/*	'A', 'C', 'S'+0x80,
+	'A', 'C', 'S'+0x80,
 	'A', 'S', 'N'+0x80,
-	'A', 'T', 'N'+0x80,*/
+	'A', 'T', 'N'+0x80,
 	'C', 'O', 'S'+0x80,
-/*	'C', 'O', 'T'+0x80,*/
+	'C', 'O', 'T'+0x80,
 	'E', 'X', 'P'+0x80,
 	'L', 'O', 'G'+0x80,
 	'P', 'I'+0x80,
@@ -45,11 +45,11 @@ static const uint8_t mathTokens[] PROGMEM = {
 };
 
 const FunctionBlock::function Math::funcs[] PROGMEM = {
-/*	Math::func_acs,
+	Math::func_acs,
 	Math::func_asn,
-	Math::func_atn,*/
+	Math::func_atn,
 	Math::func_cos,
-/*	Math::func_cot,*/
+	Math::func_cot,
 	Math::func_exp,
 	Math::func_log,
 	Math::func_pi,
@@ -64,7 +64,7 @@ FunctionBlock(next)
 	functions = funcs;
 	functionTokens = mathTokens;
 }
-/*
+
 bool
 Math::func_acs(Interpreter &i)
 {
@@ -82,20 +82,19 @@ Math::func_atn(Interpreter &i)
 {
 	return general_func(i, &atn_r);
 }
-*/
+
 bool
 Math::func_cos(Interpreter &i)
 {
 	return general_func(i, &cos_r);
 }
 
-/*
 bool
 Math::func_cot(Interpreter &i)
 {
 	return general_func(i, &cot_r);
 }
-*/
+
 bool
 Math::func_exp(Interpreter &i)
 {
@@ -134,7 +133,6 @@ Math::func_tan(Interpreter &i)
 	return general_func(i, &tan_r);
 }
 
-/*
 Real
 Math::acs_r(Real v)
 {
@@ -146,7 +144,6 @@ Math::asn_r(Real v)
 {
 	return (asin(v));
 }
-*/
 
 Real
 Math::sin_r(Real v)
@@ -159,13 +156,13 @@ Math::cos_r(Real v)
 {
 	return (cos(v));
 }
-/*
+
 Real
 Math::cot_r(Real v)
 {
 	return (Real(1) / tan(v));
 }
-*/
+
 Real
 Math::exp_r(Real v)
 {
@@ -183,13 +180,13 @@ Math::sqr_r(Real v)
 {
 	return (sqrt(v));
 }
-/*
+
 Real
 Math::atn_r(Real v)
 {
 	return (atan(v));
 }
-*/
+
 Real
 Math::tan_r(Real v)
 {

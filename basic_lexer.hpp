@@ -22,7 +22,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
-
+//#include "arduino_logger.hpp"
 #include "basic_parser.hpp"
 #include "basic_parser_value.hpp"
 #include "helper.hpp"
@@ -30,6 +30,10 @@
 namespace BASIC
 {
 
+#if ARDUINO_LOG
+Logger&
+operator<<(Logger &logger, Token tok);
+#endif
 
 /**
  * @brief Lexical analyzer class

@@ -23,6 +23,7 @@
 #include "basic_program.hpp"
 #include <assert.h>
 
+
 namespace BASIC
 {
 
@@ -56,32 +57,36 @@ SDFSModule::SDFSModule()
 void
 SDFSModule::_init()
 {
-	if (!SD.begin(SS)) {
+	if (!SD.begin())
 		abort();
-	}
+	
 	_root = SD.open("/", FILE_WRITE);
-	if (!_root || !_root.isDirectory()) {
+	if (!_root || !_root.isDirectory())
 		abort();
-	}
 }
 
 bool
 SDFSModule::directory(Interpreter &i)
-{	
+{
+	static const char strEND[] PROGMEM = "SD CARD CONTENTS";
+
 	_root.rewindDirectory();
-	i.print(F("SD CARD CONTENTS"));
+
+	char buf[17];
+	strcpy_P(buf, (PGM_P)strEND);
+	i.print(buf);
 	i.newline();
 	Integer index = 0;
 	for (File ff = _root.openNextFile(); ff; ff = _root.openNextFile()) {
 		i.print(++index);
-		i.print(F("    "));
+		i.print('\t');
 		i.print(ff.name());
 		uint8_t len = min((uint8_t(13)-strlen(ff.name())),
 		    uint8_t(13));
 		while (len-- > 0)
 			i.print(' ');
 		if (ff.isDirectory())
-			i.print(Interpreter::S_DIR);
+			i.print(ProgMemStrings::S_DIR);
 		else
 			i.print(Integer(ff.size()));
 		i.newline();
@@ -95,7 +100,7 @@ SDFSModule::scratch(Interpreter &i)
 {
 	if (!i.confirm())
 		return (true);
-	
+
 	char ss[16];
 	if (getFileName(i, ss)) {
 		SD.remove(ss);
@@ -113,24 +118,29 @@ SDFSModule::chain(Interpreter &i)
 bool
 SDFSModule::dsave(Interpreter &i)
 {
-	char ss[16];
-	if (getFileName(i, ss))
-		SD.remove(ss);
-	File f = SD.open(ss, FILE_WRITE);
+	File f;
+	{
+		char ss[16];
+		if (getFileName(i, ss))
+			SD.remove(ss);
+		f = SD.open(ss, FILE_WRITE);
+	}
 	if (!f)
 		return (false);
-	
 	i._program.reset();
+	Lexer lex;
 	for (Interpreter::Program::String *s = i._program.getString(); s != NULL;
 	    s = i._program.getString()) {
 		f.print(s->number);
-		Lexer lex;
 		lex.init(s->text);
 		while (lex.getNext()) {
 			f.write(' ');
 			Token t = lex.getToken();
 			if (t <= Token::RPAREN) {
-				f.print(Lexer::tokenStrings[uint8_t(t)]);
+				char buf[16];
+				strcpy_P(buf, (PGM_P)pgm_read_word(
+					&(Lexer::tokenStrings[uint8_t(t)])));
+				f.print(buf);
 				if (t == Token::KW_REM) {
 					f.write(' ');
 					f.print(s->text+lex.getPointer());
@@ -148,7 +158,6 @@ SDFSModule::dsave(Interpreter &i)
 		}
 		f.print('\n');
 	}
-	
 	f.close();
 	return (true);
 }
@@ -170,7 +179,6 @@ SDFSModule::dload(Interpreter &i)
 		if (res > 0) {
 			Lexer lex;
 			lex.init(buf);
-			uint16_t lineNum;
 			if (!lex.getNext() || lex.getToken() !=
 			    Token::C_INTEGER)
 				return (false);

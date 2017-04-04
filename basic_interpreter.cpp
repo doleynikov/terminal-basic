@@ -1,5 +1,3 @@
-
-
 /*
  * ucBASIC is a lightweight BASIC-like language interpreter
  * Copyright (C) 2016, 2017 Andrey V. Skvortsov <starling13@mail.ru>
@@ -31,10 +29,10 @@
 #include "basic_interpreter.hpp"
 #include "basic_program.hpp"
 #include "basic_parser_value.hpp"
-
+//#include "arduino_logger.hpp"
 #include "bytearray.hpp"
 #include "version.h"
-//#include "ascii.hpp"
+#include "ascii.hpp"
 #ifdef ARDUINO
 #include "config_arduino.hpp"
 #else
@@ -44,45 +42,47 @@
 namespace BASIC
 {
 
-static const char strStatic[] PROGMEM = "STAT.";
-static const char strDynamic[] PROGMEM = "DYN.";
-static const char strError[] PROGMEM = "ERR.";
-static const char strSemantic[] PROGMEM = "SEM.";
-static const char strReady[] PROGMEM = ">";
-static const char strBytes[] PROGMEM = "B.";
-static const char strAvailable[] PROGMEM = "FREE";
-static const char strucTERMINAL[] PROGMEM = "T.";
-static const char strucBASIC[] PROGMEM = "BASIC";
-static const char strVERSION[] PROGMEM = "v.";
-static const char strTEXT[] PROGMEM = "TXT";
-static const char strOF[] PROGMEM = "OF";
-static const char strVARS[] PROGMEM = "VARS";
-static const char strARRAYS[] PROGMEM = "ARRAYS";
-static const char strSTACK[] PROGMEM = "STACK";
-static const char strDIR[] PROGMEM = "DIR";
-static const char strREALLY[] PROGMEM = "REALLY";
+class Interpreter::AttrKeeper
+{
+public:
 
-PGM_P const Interpreter::_progmemStrings[NUM_STRINGS] PROGMEM = {
-	strStatic, // STATIC
-	strDynamic, // DYNAMAIC
-	strError, // ERROR
-	strSemantic, // SEMANTIC
-	strReady, // READY
-	strBytes, // BYTES
-	strAvailable, // AVAILABLE
-	strucTERMINAL, // TERMINAL
-	strucBASIC, // BASIC
-	strVERSION, // VERSION
-	strTEXT, // TEXT
-	strOF, // OF
-	strVARS, // VARS
-	strARRAYS, // ARRAYS
-	strSTACK, // STACK
-	strDIR, // DIR
-	strREALLY
+	explicit AttrKeeper(Interpreter &i, TextAttr a) :
+	_i(i), _a(a)
+	{return;
+/*		if (_a == NO_ATTR)
+			return;
+		if ((uint8_t(a) & uint8_t(BRIGHT)) != uint8_t(NO_ATTR))
+			_i._output.print("\x1B[1m");
+		if ((uint8_t(a) & uint8_t(UNDERSCORE)) != uint8_t(NO_ATTR))
+			_i._output.print("\x1B[4m");
+		if ((uint8_t(a) & uint8_t(REVERSE)) != uint8_t(NO_ATTR))
+			_i._output.print("\x1B[7m");
+		if ((uint8_t(a) & 0xF0) == C_YELLOW)
+			_i._output.print("\x1B[33m");
+		else if ((uint8_t(a) & 0xF0) == C_GREEN)
+			_i._output.print("\x1B[32m");
+		else if ((uint8_t(a) & 0xF0) == C_RED)
+			_i._output.print("\x1B[31m");
+		else if ((uint8_t(a) & 0xF0) == C_BLUE)
+			_i._output.print("\x1B[34m");
+		else if ((uint8_t(a) & 0xF0) == C_MAGENTA)
+			_i._output.print("\x1B[35m");
+		else if ((uint8_t(a) & 0xF0) == C_CYAN)
+			_i._output.print("\x1B[36m");
+		else if ((uint8_t(a) & 0xF0) == C_WHITE)
+			_i._output.print("\x1B[37m");
+*/	}
+
+	~AttrKeeper()
+	{
+		if (_a == NO_ATTR)
+			return;
+		//_i._output.print("\x1B[0m");
+	}
+private:
+	Interpreter &_i;
+	TextAttr _a;
 };
-
-#define ESTRING(en) (_progmemStrings[en])
 
 uint8_t Interpreter::_termnoGen = 0;
 
@@ -181,18 +181,23 @@ Interpreter::init()
 	_parser.init();
 	_program.newProg();
 
-	print(TERMINAL), print(ucBASIC);
-	print(S_VERSION), print(VERSION), newline();
-
-	print(long(_program.programSize - _program._arraysEnd));
-	print(BYTES), print(AVAILABLE), newline();
+	print(ProgMemStrings::TERMINAL, BRIGHT);
+	print(ProgMemStrings::S_TERMINAL_BASIC, BRIGHT);
+	print(ProgMemStrings::S_VERSION);
+	print(VERSION, BRIGHT), newline();
+#if BASIC_MULTITERMINAL
+	print(ProgMemStrings::TERMINAL, NO_ATTR), print(Integer(_termno), BRIGHT),
+	_output.print(':'), _output.print(' ');
+#endif
+	print(long(_program.programSize - _program._arraysEnd), BRIGHT);
+	print(ProgMemStrings::BYTES), print(ProgMemStrings::AVAILABLE), newline();
 	_state = SHELL;
 }
 
 void
 Interpreter::step()
 {
-//	
+//	LOG_TRACE;
 	
 	char c;
 
@@ -200,7 +205,7 @@ Interpreter::step()
 		// waiting for user input command or program line
 	case SHELL:
 	{
-		print(READY);
+		print(ProgMemStrings::READY, BRIGHT);
 //		newline();
 	}
 		// fall through
@@ -231,12 +236,12 @@ Interpreter::step()
 		}
 		break;
 	case EXECUTE: 
-		c = char(0x00);
+		c = char(ASCII::NUL);
 #ifdef ARDUINO
 		if (_input.available() > 0)
 			c = _input.read();
 #endif
-		if (_program._current < _program._textEnd && c != char(0x04)) {
+		if (_program._current < _program._textEnd && c != char(ASCII::EOT)) {
 			Program::String *s = _program.current();
 			if (!_parser.parse(s->text + _program._textPosition))
 				raiseError(STATIC_ERROR);
@@ -270,6 +275,7 @@ Interpreter::exec()
 void
 Interpreter::cls()
 {
+//	_output.print("\x1B[2J"), _output.print("\x1B[H");
 }
 
 void
@@ -283,7 +289,7 @@ Interpreter::list(uint16_t start, uint16_t stop)
 		if (stop > 0 && s->number > stop)
 			break;
 
-		print(long(s->number));
+		print(long(s->number), C_YELLOW);
 
 		Lexer lex;
 		lex.init(s->text);
@@ -312,13 +318,16 @@ Interpreter::dump(DumpMode mode)
 	{
 		ByteArray ba((uint8_t*) _program._text, _program.programSize);
 		_output.println(ba);
-		print(Token::KW_END), print(S_OF), print(S_TEXT), _output.print('\t');
+		print(Token::KW_END), print(ProgMemStrings::S_OF);
+		print(ProgMemStrings::S_TEXT), _output.print('\t');
 		_output.println(unsigned(_program._textEnd), HEX);
-		print(Token::KW_END), print(S_OF), print(S_VARS), _output.print('\t');
+		print(Token::KW_END), print(ProgMemStrings::S_OF);
+		print(ProgMemStrings::S_VARS), _output.print('\t');
 		_output.println(unsigned(_program._variablesEnd), HEX);
-		print(Token::KW_END), print(S_OF), print(S_ARRAYS), _output.print('\t');
+		print(Token::KW_END), print(ProgMemStrings::S_OF);
+		print(ProgMemStrings::S_ARRAYS), _output.print('\t');
 		_output.println(unsigned(_program._arraysEnd), HEX);
-		print(S_STACK), _output.print('\t');
+		print(ProgMemStrings::S_STACK), _output.print('\t');
 		_output.println(unsigned(_program._sp), HEX);
 	}
 		break;
@@ -361,9 +370,9 @@ Interpreter::dump(DumpMode mode)
 }
 
 void
-Interpreter::print(const Parser::Value &v)
+Interpreter::print(const Parser::Value &v, TextAttr attr)
 {
-//	AttrKeeper keeper(*this, attr);
+	AttrKeeper keeper(*this, attr);
 
 	switch (v.type) {
 	case Parser::Value::BOOLEAN:
@@ -405,15 +414,12 @@ Interpreter::print(const Parser::Value &v)
 		raiseError(DYNAMIC_ERROR, INVALID_VALUE_TYPE);
 		break;
 	}
-	_output.print(' ');
 }
 
 void
 Interpreter::newline()
 {
-  _output.print('\r');
-  _output.print('\n');
-
+	_output.println();
 }
 
 void
@@ -427,7 +433,11 @@ void
 Interpreter::print(Real number)
 {
 	char buf[17];
+#ifdef ARDUINO
 	::dtostrf(number, 12, 9, buf);
+#else
+	::sprintf(buf, "% .7G", number);
+#endif
 	print(buf);
 }
 #endif // USE_REALS
@@ -443,11 +453,11 @@ Interpreter::print(Lexer &l)
 		case Token::C_INTEGER:
 		case Token::C_REAL:
 		case Token::C_BOOLEAN:
-			print(l.getValue());
+			print(l.getValue(), C_CYAN);
 			break;
 		case Token::C_STRING:
 		{
-//			AttrKeeper a(*this, C_MAGENTA);
+			AttrKeeper a(*this, C_MAGENTA);
 			_output.write("\"");
 			_output.print(l.id());
 			_output.write("\" ");
@@ -460,7 +470,7 @@ Interpreter::print(Lexer &l)
 #endif
 		case Token::BOOL_IDENT:
 		case Token::STRING_IDENT:
-			print(l.id());
+			print(l.id(), C_BLUE);
 			break;
 		default:
 			_output.print('?');
@@ -638,7 +648,7 @@ Interpreter::save()
 
 	EEPROMClass e;
 	for (uint16_t ind = 0; ind < e.length(); ++ind)
-		e.write(ind, 0xFF);
+		e.update(ind, 0xFF);
 	
 	// First 2 bytes is program length
 	e.update(0, (len << 8) >> 8);
@@ -903,7 +913,7 @@ Interpreter::set(ArrayFrame &f, size_t index, const Parser::Value &v)
 bool
 Interpreter::readInput()
 {
-	int8_t a = _input.available();
+	int a = _input.available();
 	if (a <= 0)
 		return (false);
 
@@ -915,38 +925,41 @@ Interpreter::readInput()
 	uint8_t end = _inputPosition + read;
 	for (uint8_t i = _inputPosition; i < end; ++i) {
 		char c = _inputBuffer[i];
-		if (c!='\n')_output.write(c);
- 		switch (c) {
-		case char(0x08):
-			if (_inputPosition > 0)
+		switch (c) {
+		case char(ASCII::BS):
+		case char(ASCII::DEL):
+			if (_inputPosition > 0) {
 				--_inputPosition;
+				_output.write(char(ASCII::BS));
+			}
 			break;
-    case '\r':
-      _output.write('\n');
+		case char(ASCII::CR):
+			_output.println();
 			_inputBuffer[i] = 0;
 			return (true);
 		default:
 			++_inputPosition;
+			_output.write(c);
 		}
 	}
 	return (false);
 }
 
 void
-Interpreter::print(const char *text)
+Interpreter::print(const char *text, TextAttr attr)
 {
-//	AttrKeeper _a(*this, attr);
+	AttrKeeper _a(*this, attr);
 
 	_output.print(text), _output.print(' ');
 }
 
 void
-Interpreter::print(ProgMemStrings index)
+Interpreter::print(ProgMemStrings index, TextAttr attr)
 {
 	char buf[16];
-	strcpy_P(buf, (PGM_P) pgm_read_word(&(ESTRING(index))));
+	strcpy_P(buf, progmemString(index));
 
-//	AttrKeeper _a(*this, attr);
+	AttrKeeper _a(*this, attr);
 
 	_output.print(buf), _output.print(' ');
 }
@@ -958,23 +971,33 @@ Interpreter::print(Token t)
 	strcpy_P(buf, (PGM_P) pgm_read_word(&(Lexer::tokenStrings[
 	    uint8_t(t)])));
 	if (t <= Token::KW_VARS)
-		print(buf);
+		print(buf, TextAttr(uint8_t(BRIGHT) |
+	    uint8_t(C_GREEN)));
 	else
 		print(buf);
 }
 
 void
-Interpreter::print(Integer i)
+Interpreter::print(Integer i, TextAttr attr)
 {
-//	AttrKeeper _a(*this, attr);
+	AttrKeeper _a(*this, attr);
 
 	_output.print(i), _output.print(' ');
 }
 
 void
-Interpreter::print(long i)
+Interpreter::printTab(Integer tabs)
 {
-//	AttrKeeper _a(*this, attr);
+	if (tabs < 1)
+		raiseError(DYNAMIC_ERROR, INVALID_TAB_VALUE);
+	else
+		/*_output.print("\x1B["),*/ _output.print(tabs-1), _output.print('C');
+}
+
+void
+Interpreter::print(long i, TextAttr attr)
+{
+	AttrKeeper _a(*this, attr);
 
 	_output.print(i), _output.print(' ');
 }
@@ -984,15 +1007,15 @@ Interpreter::raiseError(ErrorType type, ErrorCodes errorCode)
 {
 	char buf[16];
 	if (type == DYNAMIC_ERROR)
-		strcpy_P(buf, (PGM_P) pgm_read_word(&(ESTRING(S_DYNAMIC))));
+		strcpy_P(buf, progmemString(ProgMemStrings::S_DYNAMIC));
 	else // STATIC_ERROR
-		strcpy_P(buf, (PGM_P) pgm_read_word(&(ESTRING(S_STATIC))));
+		strcpy_P(buf, progmemString(ProgMemStrings::S_STATIC));
 	_output.print(buf);
 	_output.print(' ');
-	strcpy_P(buf, (PGM_P) pgm_read_word(&(ESTRING(S_SEMANTIC))));
+	strcpy_P(buf, progmemString(ProgMemStrings::S_SEMANTIC));
 	_output.print(buf);
 	_output.print(' ');
-	strcpy_P(buf, (PGM_P) pgm_read_word(&(ESTRING(S_ERROR))));
+	strcpy_P(buf, progmemString(ProgMemStrings::S_ERROR));
 	_output.print(buf);
 	_output.print(':');
 	if (type == DYNAMIC_ERROR) {
@@ -1129,10 +1152,8 @@ Interpreter::newArray(const char *name)
 				array->dimension[dim] = f->body.arrayDimension;
 				_program.pop();
 			}
-		} else
-			return;
-	};
-	return;
+		}
+	}
 }
 
 const Interpreter::VariableFrame*
@@ -1175,11 +1196,10 @@ Interpreter::pushDimensions(uint8_t dim)
 {
 	Program::StackFrame *f =
 	    _program.push(Program::StackFrame::ARRAY_DIMENSIONS);
-	if (f == NULL) {
+	if (f != NULL)
+		f->body.arrayDimensions = dim;
+	else
 		raiseError(DYNAMIC_ERROR, STACK_FRAME_ALLOCATION);
-		return;
-	}
-	f->body.arrayDimensions = dim;
 }
 
 bool
@@ -1187,14 +1207,14 @@ Interpreter::confirm()
 {
 	bool result = false;
 	do {
-		print(S_REALLY);
+		print(ProgMemStrings::S_REALLY);
 		print('?');
 		newline();
 		while (_input.available() <= 0);
 		char c = _input.read();
 		_output.write(c);
 		while (_input.available() <= 0);
-    if (_input.read() != '\r') {
+		if (_input.read() != int(ASCII::CR)) {
 			newline();
 			continue;
 		}
@@ -1224,10 +1244,10 @@ Interpreter::strConcat(Parser::Value &v1, Parser::Value &v2)
 				l2 = STRINGSIZE - l1 - 1;
 			strncpy(ff->body.string + l1, f->body.string, l2);
 			ff->body.string[l1 + l2] = 0;
-		} else
-			raiseError(DYNAMIC_ERROR, STRING_FRAME_SEARCH);
-	} else
-		raiseError(DYNAMIC_ERROR, STRING_FRAME_SEARCH);
+			return;
+		}
+	}
+	raiseError(DYNAMIC_ERROR, STRING_FRAME_SEARCH);
 }
 
 void
@@ -1309,15 +1329,16 @@ Interpreter::addArray(const char *name, uint8_t dim,
 #if USE_REALS
 		t = VF_REAL;
 		num *= sizeof (Real);
-#endif		// Integer
+#else		// Integer
 		t = VF_INTEGER;
 		num *= sizeof (Integer);
+#endif
 	}
 	
 	size_t dist = sizeof (ArrayFrame) + sizeof (size_t) * dim + num;
 	if (_program._arraysEnd + dist >= _program._sp) {
 		raiseError(DYNAMIC_ERROR, OUTTA_MEMORY);
-		return NULL;
+		return (NULL);
 	}
 	memmove(_program._text + index + dist, _program._text + index,
 	    _program._arraysEnd - index);

@@ -34,9 +34,12 @@
 #define USEMATH 	1 // Math (requires USE_REALS)
 #define USEARDUINOIO	0 // ARduino IO
 
+// Uыe TFT output
+#define USEUTFT		0
 
 // Use multiterminal mode
 #define BASIC_MULTITERMINAL 0
+
 // Use external memory
 #define USE_EXTMEM	0
 #define EXTMEM_ADDRESS 0x8000
@@ -47,7 +50,6 @@ namespace BASIC
 // Tokenize keywords in program text
 const bool TOKENIZE = true;
 // Max size of the program line
-//const uint8_t PROGSTRINGSIZE = 72;
 const uint8_t PROGSTRINGSIZE = 40;
 
 // Number of bytes for program text, variables and stack
@@ -56,24 +58,24 @@ const size_t PROGRAMSIZE = EXTMEM_SIZE;
 #elif defined (__AVR_ATmega1284__) || defined (__AVR_ATmega1284P__)
 const size_t PROGRAMSIZE = 14848;
 #elif defined (__AVR_ATmega2560__)
-const size_t PROGRAMSIZE = 6144;
+const size_t PROGRAMSIZE = 4096;
 #elif defined (__AVR_ATmega128__) || defined (__AVR_ATmega128A__)
 const size_t PROGRAMSIZE = 3072;
 #elif defined (__AVR_ATmega328__) || defined (__AVR_ATmega328P__)
 //const size_t PROGRAMSIZE = 1024;
 const size_t PROGRAMSIZE = 384*2;
-
 #elif defined (__AVR_ATmega168__)
 const size_t PROGRAMSIZE = 384;
 #endif
 
 // Max size of the string constants/variables
-//const uint8_t STRINGSIZE = 32;
-const uint8_t STRINGSIZE = 16;
+const uint8_t STRINGSIZE = 32;
 
 // Number of characters in variable name
 const uint8_t VARSIZE = 4;
 
 }
+
+#define ARDUINO_LOG 0
 
 #endif // CONFIG_ARDUINO_HPP

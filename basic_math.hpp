@@ -35,11 +35,11 @@ class Math : public FunctionBlock
 public:
 	explicit Math(FunctionBlock* =NULL);
 private:
-/*	static bool func_acs(Interpreter&);
+	static bool func_acs(Interpreter&);
 	static bool func_asn(Interpreter&);
-	static bool func_atn(Interpreter&);*/
+	static bool func_atn(Interpreter&);
 	static bool func_cos(Interpreter&);
-/*	static bool func_cot(Interpreter&);*/
+	static bool func_cot(Interpreter&);
 	static bool func_exp(Interpreter&);
 	static bool func_log(Interpreter&);
 	static bool func_sin(Interpreter&);
@@ -47,12 +47,12 @@ private:
 	static bool func_pi(Interpreter&);
 	static bool func_tan(Interpreter&);
 	
-/*	static Real acs_r(Real);
+	static Real acs_r(Real);
 	static Real asn_r(Real);
-	static Real atn_r(Real);*/
+	static Real atn_r(Real);
 	static Real sin_r(Real);
 	static Real cos_r(Real);
-/*	static Real cot_r(Real);*/
+	static Real cot_r(Real);
 	static Real exp_r(Real);
 	static Real log_r(Real);
 	static Real sqr_r(Real);
