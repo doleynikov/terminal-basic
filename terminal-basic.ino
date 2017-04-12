@@ -47,8 +47,8 @@
 
 class myLcd : public MyLiquidCrystal_I2C   // производный класс
 {
-    char screen[40]={' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '};
-    int8_t pos = 0;
+  char screen[40]={' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '/*,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '*/};
+  int8_t pos = 0;
 
   public:
 
@@ -69,7 +69,7 @@ class myLcd : public MyLiquidCrystal_I2C   // производный класс
       else if (value == '\r') {setCursor(0, 1);pos=0;}
       return 1;
     }
-    
+ private:   
 void    scroll() {
       int8_t tpos = pos;
       clear();
@@ -79,7 +79,7 @@ void    scroll() {
         screen[i]=' ';
       }
       pos=tpos;
-      setCursor(tpos, 1);
+      setCursor(pos, 1);
     }
 
 };

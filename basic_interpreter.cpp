@@ -913,7 +913,7 @@ Interpreter::set(ArrayFrame &f, size_t index, const Parser::Value &v)
 bool
 Interpreter::readInput()
 {
-	int a = _input.available();
+	uint8_t a = _input.available();
 	if (a <= 0)
 		return (false);
 
@@ -1053,7 +1053,7 @@ Interpreter::setVariable(const char *name, const Parser::Value &v)
 	VariableFrame *f;
 	for (f = _program.variableByIndex(index); f != NULL; index += f->size(),
 	    f = _program.variableByIndex(index)) {
-		int res = strcmp(name, f->name);
+		uint8_t res = strcmp(name, f->name);
 		if (res == 0) {
 			set(*f, v);
 			return (f);
@@ -1300,7 +1300,7 @@ Interpreter::addArray(const char *name, uint8_t dim,
 	ArrayFrame *f;
 	for (f = _program.arrayByIndex(index); index < _program._arraysEnd;
 	    index += f->size(), f = _program.arrayByIndex(index)) {
-		int res = strcmp(name, f->name);
+		uint8_t res = strcmp(name, f->name);
 		if (res == 0) {
 			raiseError(DYNAMIC_ERROR, REDIMED_ARRAY);
 			return (NULL);

@@ -84,9 +84,6 @@ static uint8_t shift = 0B00000000;
     shift &= 0B11111100; //обнулим биты шифтов
   }
   if (ret == CharBuffer)ret = 0;
-
-//  Serial.println(ret);
-  
   return ret;
 }
 
@@ -97,8 +94,6 @@ static uint8_t row = 255;
 static uint8_t col = 255;
 static uint8_t oldRow = 255;
 static uint8_t oldCol = 255;
-uint8_t i;
-uint8_t j;
 static uint8_t keyPressed = 0;
 static uint8_t keyReleased = 255;
 
@@ -106,11 +101,11 @@ static uint8_t keyReleased = 255;
   // Обработчик прерывания таймера 2
   col = 255;
   row = 255;
-  for (i = 0; i < COLS; i++)
+  for (uint8_t i = 0; i < COLS; i++)
   {
     PORTB &= ~(1 << i);
     delay (10);
-    for (j = 0; j < ROWS / 2; j++)
+    for (uint8_t j = 0; j < ROWS / 2; j++)
     {
       if (!(PINC & (1 << j)))
       {
@@ -136,8 +131,7 @@ static uint8_t keyReleased = 255;
   else if (keyReleased = 1) // клавиша не нажата но была нажата на предыдущем цикле
   {
     keyReleased = 255; //для следующего нажатия
-    uint8_t key = getScanCode(oldRow, oldCol);
-    CharBuffer = key;
+    CharBuffer = getScanCode(oldRow, oldCol);
     oldRow = 255; row = 255; //сбросим счетчики строки и столбца и промежуточное хранилище
     oldCol = 255; col = 255;
 
@@ -173,13 +167,13 @@ matrixKB::matrixKB()
 void matrixKB::begin()
 {
   cli();
-  DDRB = 0xFF;
-  PORTB = 0xFF;
-
-  DDRC = 0x00;
-  PORTC = 0b00001111; //0x0F;
-  DDRD = 0x00;
-  PORTD = 0b00111100; //0x0F;
+  DDRB  = 0b00011111;
+  PORTB = 0b00000000;
+//не включаем подтягивающие резисторы на входы
+  DDRC  = 0b00000000;
+  PORTC = 0b00000000; //0x0F;
+  DDRD  = 0b00000000;
+  PORTD = 0b00000000; 
   delay(10);
 
   TCCR2A = (1 << WGM21);  // Режим CTC (сброс по совпадению)

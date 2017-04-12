@@ -223,7 +223,6 @@ inline void MyLiquidCrystal_I2C::command(uint8_t value) {
 	send(value, 0);
 }
 
-
 /************ low level data pushing commands **********/
 
 // write either command or data
